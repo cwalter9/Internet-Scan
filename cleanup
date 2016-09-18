@@ -1,7 +1,6 @@
 #!/bin/bash
 
-MYSQLQ="mysql -Dinternetscan -s"
-cdate=`date +%F`
+. functions
 
 for i in `echo "select ipaddr from address where status=2 and updown=0" | $MYSQLQ`; do
   rm -rf address/$i

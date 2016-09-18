@@ -1,7 +1,7 @@
 #!/bin/bash
 
-MYSQLQ="mysql -Dinternetscan -s"
-cdate=`date +%F`
+. functions
+
 runfile='/tmp/procscan'
 
 if [ -f $runfile ]; then
@@ -21,8 +21,6 @@ for i in `echo "select addid from address where status=2 and updown is null" | $
     else
       echo "update address set updown=0 where addid='$i'" | $MYSQLQ
     fi
-
-#    echo "$i $ipaddr"
   fi
 done
 

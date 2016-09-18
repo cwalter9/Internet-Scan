@@ -1,7 +1,7 @@
 #!/bin/bash
 
-MYSQLQ="mysql -Dinternetscan -s"
-cdate=`date +%F`
+. functions
+
 runcount=`cat config | grep AddressNewPerRun | gawk -F= '{ print $2 }'`
 runfile='/tmp/randadd'
 

@@ -1,7 +1,7 @@
 #!/bin/bash
 
-MYSQLQ="mysql -Dinternetscan -s"
-cdate=`date +%F`
+. functions
+
 runcount=5
 
 for i in `echo "select addid from address where status=1" | $MYSQLQ`; do

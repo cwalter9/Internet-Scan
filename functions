@@ -1,1 +1,3 @@
-MYSQLQ=
+MYSQLQ="mysql -Dinternetscan -s"
+cdate=`date +%F`
+

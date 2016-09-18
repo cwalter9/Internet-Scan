@@ -1,7 +1,6 @@
 #!/bin/bash
 
-MYSQLQ="mysql -Dinternetscan -s"
-cdate=`date +%F`
+. functions
 
 runfile='/tmp/filladdr'
 
