@@ -1,0 +1,29 @@
+#!/bin/bash
+
+MYSQLQ="mysql -Dinternetscan -s"
+cdate=`date +%F`
+runfile='/tmp/hostwork'
+
+if [ -f $runfile ]; then
+  exit 2
+else
+  touch $runfile
+fi
+
+if [ ! -d /tmp/xml ]; then
+  mkdir /tmp/xml
+fi
+
+for i in `echo "select addid from address where status=2 and updown=1" | $MYSQLQ`; do
+  ipaddr=`echo "select ipaddr from address where addid='$i'" | $MYSQLQ`
+  if [ ! -f /tmp/xml/$ipaddr ]; then
+    nmap --host-timeout 60 -oX /tmp/xml/$ipaddr $ipaddr
+  fi
+  for f in `cat /tmp/xml/$ipaddr | grep "port protocol" | gawk -F\" '{ print $4 }'`; do
+    chtime=`date +%s`
+    echo "insert into ports set addid='$i',port='$f',chtime='$chtime'" | $MYSQLQ
+    echo "update address set status=3 where addid='$i'" | $MYSQLQ
+  done
+done
+
+rm -rf $runfile

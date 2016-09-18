@@ -1,0 +1,5 @@
+DatabaseType=mysql
+DatabaseName=internetscan
+FileTempDir='/tmp/'
+MYSQLQ="mysql -Dinternetscan -s"
+AddressNewPerRun=5

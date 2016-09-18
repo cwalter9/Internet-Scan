@@ -1,0 +1,14 @@
+#!/bin/bash
+
+if [ -f /tmp/dowork ]; then
+  echo "Already running!"
+  exit 2
+else
+  touch /tmp/dowork
+fi
+
+cd /admin
+./randadd
+./filladdr
+
+rm -rf /tmp/dowork

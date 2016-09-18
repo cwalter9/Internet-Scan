@@ -1,0 +1,20 @@
+#!/bin/bash
+
+MYSQLQ="mysql -Dinternetscan -s"
+cdate=`date +%F`
+runcount=5
+
+for i in `echo "select addid from address where status=1" | $MYSQLQ`; do
+
+  oct1=`echo "select oct1 from address where addid='$i'" | $MYSQLQ`
+  oct2=`echo "select oct2 from address where addid='$i'" | $MYSQLQ`
+  oct3=`echo "select oct3 from address where addid='$i'" | $MYSQLQ`
+  oct4=`echo "select oct4 from address where addid='$i'" | $MYSQLQ`
+
+  address="$oct1.$oct2.$oct3.$oct4"
+
+  echo "Scanning $address"
+  nmap --host-timeout 30 "$address" -oG /admin/address/$address
+  echo "update address set status=2 where addid='$i'" | $MYSQLQ
+
+done

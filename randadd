@@ -1,0 +1,46 @@
+#!/bin/bash
+
+MYSQLQ="mysql -Dinternetscan -s"
+cdate=`date +%F`
+runcount=`cat config | grep AddressNewPerRun | gawk -F= '{ print $2 }'`
+runfile='/tmp/randadd'
+
+if [ -f $runfile ]; then
+  exit 2
+else
+  touch $runfile
+fi
+
+lcount=0
+while [ $lcount -lt $runcount ]; do
+  oct1=`shuf -i1-255 -n1`
+  oct2=`shuf -i1-255 -n1`
+  oct3=`shuf -i1-255 -n1`
+  oct4=`shuf -i1-255 -n1`
+  addid=`echo "select addid from address where oct1='$oct1' and oct2='$oct2' and oct3='$oct3' and oct4='$oct4'" | $MYSQLQ`
+  if [ -z $addid ]; then
+    echo "insert into address set oct1='$oct1',oct2='$oct2',oct3='$oct3',oct4='$oct4',adddate='$cdate'" | $MYSQLQ
+    lcount=`echo "$lcount + 1" | bc`
+  fi
+done
+
+echo "delete from address where oct1=10" | $MYSQLQ
+echo "delete from address where oct1=172 and oct2=16" | $MYSQLQ
+echo "delete from address where oct1=172 and oct2=17" | $MYSQLQ
+echo "delete from address where oct1=172 and oct2=18" | $MYSQLQ
+echo "delete from address where oct1=172 and oct2=19" | $MYSQLQ
+echo "delete from address where oct1=172 and oct2=20" | $MYSQLQ
+echo "delete from address where oct1=172 and oct2=21" | $MYSQLQ
+echo "delete from address where oct1=172 and oct2=22" | $MYSQLQ
+echo "delete from address where oct1=172 and oct2=23" | $MYSQLQ
+echo "delete from address where oct1=172 and oct2=24" | $MYSQLQ
+echo "delete from address where oct1=172 and oct2=25" | $MYSQLQ
+echo "delete from address where oct1=172 and oct2=26" | $MYSQLQ
+echo "delete from address where oct1=172 and oct2=27" | $MYSQLQ
+echo "delete from address where oct1=172 and oct2=28" | $MYSQLQ
+echo "delete from address where oct1=172 and oct2=29" | $MYSQLQ
+echo "delete from address where oct1=172 and oct2=30" | $MYSQLQ
+echo "delete from address where oct1=172 and oct2=31" | $MYSQLQ
+echo "delete from address where oct1=192 and oct2=16" | $MYSQLQ
+
+rm -rf $runfile
