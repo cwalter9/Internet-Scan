@@ -7,7 +7,7 @@ cd /admin/iscan
 echo "Null addresses: `echo "select count(*) from address where ipaddr is null" | $MYSQLQ`"
 echo "Waiting to be scanned: `echo "select count(*) from address where status=1" | $MYSQLQ`"
 echo "Waiting to be processed: `echo "select count(*) from address where status=2" | $MYSQLQ`"
-echo "Waiting port scan: `echo "select count(*) from address where status=3" | $MYSQLQ`"
+echo "Waiting port scan: `echo "select count(*) from address where status=3 and updown=1" | $MYSQLQ`"
 echo "Hosts processed: `echo "select count(*) from address where status=4" | $MYSQLQ`"
 echo "---------------------------------------------"
 echo "Hosts found: `echo "select count(*) from address where status>2 and updown=1" | $MYSQLQ`"
