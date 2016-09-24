@@ -1,3 +1,10 @@
 MYSQLQ="mysql -Dinternetscan -s"
 cdate=`date +%F`
 
+function getvar {
+  cat config | grep $1 | gawk -F= '{ print $2 }'
+}
+
+workdir=`getvar FileWorkDir`
+
+cd $workdir

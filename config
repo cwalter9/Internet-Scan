@@ -1,5 +1,8 @@
 DatabaseType=mysql
 DatabaseName=internetscan
-FileTempDir='/tmp/'
+FileTempDir=/tmp/
+FileAddrDir=/admin/address/
+FileWorkDir=/admin/iscan/
 MYSQLQ="mysql -Dinternetscan -s"
-AddressNewPerRun=5
+ProcEnable=1
+AddressNewPerRun=50

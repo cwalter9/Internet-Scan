@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /admin/iscan
+
 . functions
 
 runfile='/tmp/procscan'
@@ -10,16 +12,18 @@ else
   touch $runfile
 fi
 
-for i in `echo "select addid from address where status=2 and updown is null" | $MYSQLQ`; do
+for i in `echo "select addid from address where status=2" | $MYSQLQ`; do
   ipaddr=`echo "select ipaddr from address where addid='$i'" | $MYSQLQ`
   if [ -f address/$ipaddr ]; then
 
     upstat=`cat address/$ipaddr | grep "Status: Up" | wc -l`
 
     if [ $upstat -eq 1 ]; then
-      echo "update address set updown=1 where addid='$i'" | $MYSQLQ
+      echo "update address set updown=1,status=3 where addid='$i'" | $MYSQLQ
+#      echo "$i $ipaddr $upstat 3"
     else
-      echo "update address set updown=0 where addid='$i'" | $MYSQLQ
+      echo "update address set updown=0,status=3 where addid='$i'" | $MYSQLQ
+#      echo "$i $ipaddr $upstat 3"
     fi
   fi
 done

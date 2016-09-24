@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /admin/iscan
+
 . functions
 
 runcount=`cat config | grep AddressNewPerRun | gawk -F= '{ print $2 }'`

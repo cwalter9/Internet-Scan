@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /admin/iscan
+
 . functions
 
 if [ -f /tmp/dowork ]; then
@@ -10,7 +12,11 @@ else
 fi
 
 cd /admin/iscan
-bash randadd
-bash filladdr
+
+bash randadd &
+bash filladdr &
+bash scanadd &
+bash procscan &
+# bash hostwork &
 
 rm -rf /tmp/dowork

@@ -1,5 +1,7 @@
 #!/bin/bash
 
+cd /admin/iscan
+
 . functions
 
 runfile='/tmp/hostwork'
@@ -10,20 +12,27 @@ else
   touch $runfile
 fi
 
+echo "Starting"
+
 if [ ! -d /tmp/xml ]; then
   mkdir /tmp/xml
 fi
 
-for i in `echo "select addid from address where status=2 and updown=1" | $MYSQLQ`; do
+for i in `echo "select addid from address where status=3 and updown=1" | $MYSQLQ`; do
+#  echo "Process $i"
   ipaddr=`echo "select ipaddr from address where addid='$i'" | $MYSQLQ`
+#  echo "IP $ipaddr"
   if [ ! -f /tmp/xml/$ipaddr ]; then
+#    echo "IP $ipaddr"
     nmap --host-timeout 60 -oX /tmp/xml/$ipaddr $ipaddr
   fi
   for f in `cat /tmp/xml/$ipaddr | grep "port protocol" | gawk -F\" '{ print $4 }'`; do
+#    echo "$ipaddr $f"
     chtime=`date +%s`
     echo "insert into ports set addid='$i',port='$f',chtime='$chtime'" | $MYSQLQ
-    echo "update address set status=3 where addid='$i'" | $MYSQLQ
+#     echo "$addid $port $chtime"
   done
+  echo "update address set status=3 where addid='$i'" | $MYSQLQ
 done
 
 rm -rf $runfile
