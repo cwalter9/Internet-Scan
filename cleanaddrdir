@@ -1,0 +1,25 @@
+#!/bin/bash
+
+cd /admin/iscan
+
+. functions
+
+runfile='/tmp/cleanaddrdir'
+
+if [ -f $runfile ]; then
+  exit 2
+else
+  touch $runfile
+fi
+
+cage=`cat config | grep AgeHostXML | gawk -F= '{ print $2 }'`
+ctime=`date +%s`
+ctime=`echo "$ctime - $cage" | bc`
+
+for i in `echo "select addid from ports where chtime<'$ctime'" | $MYSQLQ | sort | uniq`; do
+  for h in `echo "select ipaddr from address where addid='$i'" | $MYSQLQ`; do
+    rm -rf address/$h
+  done
+done
+
+rm -rf $runfile

@@ -4,6 +4,13 @@ cd /admin/iscan
 
 . functions
 
+penable=`cat config | grep ProcEnable | gawk -F= '{ print $2 }'`
+
+if [ $penable -eq 0 ]; then
+  echo "Disabled"
+  exit 3
+fi
+
 if [ -f /tmp/dowork ]; then
   echo "Already running!"
   exit 2
@@ -17,6 +24,7 @@ bash randadd &
 bash filladdr &
 bash scanadd &
 bash procscan &
-# bash hostwork &
+bash hostwork &
+bash cleanaddrdir &
 
 rm -rf /tmp/dowork
