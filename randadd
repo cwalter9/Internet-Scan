@@ -3,6 +3,7 @@
 cd /admin/iscan
 
 . functions
+dblog randadd "Start adding random IP"
 
 runcount=`cat config | grep AddressNewPerRun | gawk -F= '{ print $2 }'`
 runfile='/tmp/randadd'
@@ -46,3 +47,5 @@ echo "delete from address where oct1=172 and oct2=31" | $MYSQLQ
 echo "delete from address where oct1=192 and oct2=16" | $MYSQLQ
 
 rm -rf $runfile
+
+dblog scanadd "Stopping random add"

@@ -5,6 +5,14 @@ function getvar {
   cat config | grep $1 | gawk -F= '{ print $2 }'
 }
 
+function dblog {
+  echo "insert into log set pid='$1',entry='$2'" | $MYSQLQ
+}
+
 workdir=`getvar FileWorkDir`
 
 cd $workdir
+
+function checkproxy {
+  curl -s -S --connect-timeout 5 -x http://$1 http://www.walternet.com/wtime
+}

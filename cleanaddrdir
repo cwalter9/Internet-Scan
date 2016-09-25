@@ -18,8 +18,13 @@ ctime=`echo "$ctime - $cage" | bc`
 
 for i in `echo "select addid from ports where chtime<'$ctime'" | $MYSQLQ | sort | uniq`; do
   for h in `echo "select ipaddr from address where addid='$i'" | $MYSQLQ`; do
+    echo "$i $h"
     rm -rf address/$h
   done
+done
+
+for i in `echo "select ipaddr from address where status=3 and updown=0" | $MYSQLQ`; do
+  rm -rf address/$i
 done
 
 rm -rf $runfile

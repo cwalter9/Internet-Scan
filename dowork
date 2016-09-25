@@ -3,6 +3,7 @@
 cd /admin/iscan
 
 . functions
+dblog dowork "Starting dowork"
 
 penable=`cat config | grep ProcEnable | gawk -F= '{ print $2 }'`
 
@@ -25,6 +26,7 @@ bash filladdr &
 bash scanadd &
 bash procscan &
 bash hostwork &
+bash proxycheck &
 bash cleanaddrdir &
 
 rm -rf /tmp/dowork

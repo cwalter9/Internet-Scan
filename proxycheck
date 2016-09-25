@@ -1,0 +1,58 @@
+#!/bin/bash
+
+cd /admin/iscan
+
+. functions
+
+runfile='/tmp/proxycheck'
+
+if [ -f $runfile ]; then
+  exit 2
+else
+  touch $runfile
+fi
+
+cport='8080'
+for i in `echo "select poid from ports where port='$cport' and status=0" | $MYSQLQ`; do
+  addid=`echo "select addid from ports where poid='$i'" | $MYSQLQ`
+  caddr=`echo "select ipaddr from address where addid='$addid'" | $MYSQLQ`
+  pcheck="http://$caddr:$cport"
+
+# pcheck="http://4.35.116.30:3128"
+#  echo $pcheck
+  presult=`case "$(curl -s -x $pcheck --max-time 2 -I http://google.com | sed 's/^[^ ]*  *\([0-9]\).*/\1/; 1q')" in
+  [23]) echo "1";;
+  5) echo "2";;
+  *) echo "0";;
+esac`
+
+if [ $presult -eq 1 ]; then
+  echo "update ports set status=1 where poid='$i' and addid='$addid'" | $MYSQLQ
+  echo "insert into service set addid='$addid',poid='$i',service='proxy'" | $MYSQLQ
+elif [ $presult -eq 0 ]; then
+  echo "update ports set status=3 where poid='$i' and addid='$addid'" | $MYSQLQ
+elif [ $presult -eq 2 ]; then
+  echo "update ports set status=2 where poid='$i' and addid='$addid'" | $MYSQLQ
+fi
+
+done
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+rm -rf $runfile
+
+
+# curl: (28) Connection timed out after 5002 milliseconds
+# curl: (7) Failed connect to 41.151.7.26:3128; Connection refused
