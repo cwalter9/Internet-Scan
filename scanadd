@@ -3,7 +3,8 @@
 cd /admin/iscan
 
 . functions
-dblog scanadd "Starting scanadd process"
+
+funstart scanadd
 
 runfile='/tmp/scanadd'
 runlimit=`cat config | grep AddressScanRun | gawk -F= '{ print $2 }'`
@@ -24,6 +25,6 @@ for i in `echo "select addid from address where status=1 limit $runlimit" | $MYS
 
 done
 
-rm -rf $runfile
+funstop scanadd
 
-dblog scanadd "Stopping scanadd process"
+rm -rf $runfile

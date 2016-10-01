@@ -4,6 +4,8 @@ cd /admin/iscan
 
 . functions
 
+funstart procscan
+
 runfile='/tmp/procscan'
 
 if [ -f $runfile ]; then
@@ -27,5 +29,7 @@ for i in `echo "select addid from address where status=2" | $MYSQLQ`; do
     fi
   fi
 done
+
+funstop procscan
 
 rm -rf $runfile

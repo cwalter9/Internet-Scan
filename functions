@@ -16,3 +16,15 @@ cd $workdir
 function checkproxy {
   curl -s -S --connect-timeout 5 -x http://$1 http://www.walternet.com/wtime
 }
+
+function funstart {
+  stime=`date +%s`
+  dblog $1 "Start $stime"
+}
+
+function funstop {
+  ftime=`date +%s`
+  totime=`echo "$ftime - $stime" | bc`
+
+  dblog $1 "Finish $totime"
+}

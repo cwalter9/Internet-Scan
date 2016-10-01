@@ -4,6 +4,8 @@ cd /admin/iscan
 
 . functions
 
+funstart cleanaddrdir
+
 runfile='/tmp/cleanaddrdir'
 
 if [ -f $runfile ]; then
@@ -26,5 +28,11 @@ done
 for i in `echo "select ipaddr from address where status=3 and updown=0" | $MYSQLQ`; do
   rm -rf address/$i
 done
+
+# for i in `echo "select ipaddr from address where status=4" | $MYSQLQ`; do
+#  rm -rf address/$i
+# done
+
+funstop cleanaddrdir
 
 rm -rf $runfile

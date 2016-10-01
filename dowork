@@ -1,14 +1,17 @@
 #!/bin/bash
 
+stime=`date +%s`
+
 cd /admin/iscan
 
 . functions
-dblog dowork "Starting dowork"
+
+funstart dowork
 
 penable=`cat config | grep ProcEnable | gawk -F= '{ print $2 }'`
 
 if [ $penable -eq 0 ]; then
-  echo "Disabled"
+  dblog dowork "Exiting Processing disabled"
   exit 3
 fi
 
@@ -28,5 +31,11 @@ bash procscan &
 bash hostwork &
 bash proxycheck &
 bash cleanaddrdir &
+
+
+ftime=`date +%s`
+totime=`echo "$ftime - $stime" | bc`
+
+funstop dowork
 
 rm -rf /tmp/dowork

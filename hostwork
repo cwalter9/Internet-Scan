@@ -4,6 +4,8 @@ cd /admin/iscan
 
 . functions
 
+funstart hostwork
+
 runfile='/tmp/hostwork'
 
 if [ -f $runfile ]; then
@@ -29,5 +31,7 @@ for i in `echo "select addid from address where status=3 and updown=1" | $MYSQLQ
   done
   echo "update address set status=4 where addid='$i'" | $MYSQLQ
 done
+
+funstop hostwork
 
 rm -rf $runfile

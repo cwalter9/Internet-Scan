@@ -4,6 +4,8 @@ cd /admin/iscan
 
 . functions
 
+funstart proxycheck
+
 runfile='/tmp/proxycheck'
 
 if [ -f $runfile ]; then
@@ -12,7 +14,11 @@ else
   touch $runfile
 fi
 
-cport='8080'
+# cport='3128'
+
+for cport in `echo "select vfield from vars where vname='proxy'" | $MYSQLQ`; do
+# echo $cport
+
 for i in `echo "select poid from ports where port='$cport' and status=0" | $MYSQLQ`; do
   addid=`echo "select addid from ports where poid='$i'" | $MYSQLQ`
   caddr=`echo "select ipaddr from address where addid='$addid'" | $MYSQLQ`
@@ -24,7 +30,7 @@ for i in `echo "select poid from ports where port='$cport' and status=0" | $MYSQ
   [23]) echo "1";;
   5) echo "2";;
   *) echo "0";;
-esac`
+  esac`
 
 if [ $presult -eq 1 ]; then
   echo "update ports set status=1 where poid='$i' and addid='$addid'" | $MYSQLQ
@@ -34,6 +40,8 @@ elif [ $presult -eq 0 ]; then
 elif [ $presult -eq 2 ]; then
   echo "update ports set status=2 where poid='$i' and addid='$addid'" | $MYSQLQ
 fi
+
+done
 
 done
 
@@ -47,7 +55,7 @@ done
 
 
 
-
+funstop proxycheck
 
 
 
