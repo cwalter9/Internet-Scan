@@ -28,3 +28,27 @@ function funstop {
 
   dblog $1 "Finish $totime"
 }
+
+function resethost {
+  dblog reset "Resetting host $1 for rescan"
+  addid=`echo "select addid from address where ipaddr='$1'" | $MYSQLQ`
+  echo "delete from ports where addid='$addid'" | $MYSQLQ
+  echo "delete from service where addid='$addid'" | $MYSQLQ
+  ctime=`date +%s`
+  echo "update address set status=1,updown=0,utime='$ctime' where ipaddr='$1'" | $MYSQLQ
+}
+
+function checkprocess {
+  if [ -f $2 ]; then
+    dblog $1 "Already running exit 2"
+    exit 2
+  else
+    touch $2
+  fi
+}
+
+function chkmkdir {
+  if [ ! -d $1 ]; then
+    mkdir $1
+  fi
+}

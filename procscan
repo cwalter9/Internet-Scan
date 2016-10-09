@@ -14,6 +14,8 @@ else
   touch $runfile
 fi
 
+ctime=`date +%s`
+
 for i in `echo "select addid from address where status=2" | $MYSQLQ`; do
   ipaddr=`echo "select ipaddr from address where addid='$i'" | $MYSQLQ`
   if [ -f address/$ipaddr ]; then
@@ -21,10 +23,10 @@ for i in `echo "select addid from address where status=2" | $MYSQLQ`; do
     upstat=`cat address/$ipaddr | grep "Status: Up" | wc -l`
 
     if [ $upstat -eq 1 ]; then
-      echo "update address set updown=1,status=3 where addid='$i'" | $MYSQLQ
+      echo "update address set updown=1,status=3,utime='$ctime' where addid='$i'" | $MYSQLQ
 #      echo "$i $ipaddr $upstat 3"
     else
-      echo "update address set updown=0,status=3 where addid='$i'" | $MYSQLQ
+      echo "update address set updown=0,status=3,utime='$ctime' where addid='$i'" | $MYSQLQ
 #      echo "$i $ipaddr $upstat 3"
     fi
   fi
