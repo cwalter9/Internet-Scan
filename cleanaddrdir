@@ -4,35 +4,35 @@ cd /admin/iscan
 
 . functions
 
-funstart cleanaddrdir
-
-runfile='/tmp/cleanaddrdir'
-
-if [ -f $runfile ]; then
-  exit 2
-else
-  touch $runfile
-fi
+# processname=`echo $0 | sed 's/.\///'`
+# funstart $processname
+# runfile="/tmp/$processname"
+# checkprocess $processname $runfile
 
 cage=`cat config | grep AgeHostXML | gawk -F= '{ print $2 }'`
 ctime=`date +%s`
 ctime=`echo "$ctime - $cage" | bc`
 
+rmcount=0
+
 for i in `echo "select addid from ports where chtime<'$ctime'" | $MYSQLQ | sort | uniq`; do
   for h in `echo "select ipaddr from address where addid='$i'" | $MYSQLQ`; do
     echo "$i $h"
     rm -rf address/$h
+    rmcount=`echo "$rmcount + 1" | bc`
   done
 done
 
 for i in `echo "select ipaddr from address where status=3 and updown=0" | $MYSQLQ`; do
   rm -rf address/$i
+  rmcount=`echo "$rmcount + 1" | bc`
 done
 
 for i in `echo "select ipaddr from address where status=4" | $MYSQLQ`; do
- rm -rf address/$i
+  rm -rf address/$i
+  rmcount=`echo "$rmcount + 1" | bc`
 done
 
-funstop cleanaddrdir
+dblog cleanaddrdir "Removed $rmcount files"
 
-rm -rf $runfile
+funstop cleanaddrdir
