@@ -25,7 +25,7 @@ function funstart {
 function funstop {
   ftime=`date +%s`
   totime=`echo "$ftime - $stime" | bc`
-
+  rm -rf $runfile
   dblog $1 "Finish $totime"
 }
 
@@ -44,6 +44,7 @@ function checkprocess {
     exit 2
   else
     touch $2
+#    cat $$ > $2
   fi
 }
 
@@ -52,3 +53,8 @@ function chkmkdir {
     mkdir $1
   fi
 }
+
+processname=`echo $0 | sed 's/.\///'`
+funstart $processname
+runfile="/tmp/$processname"
+checkprocess $processname $runfile
