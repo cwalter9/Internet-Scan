@@ -4,16 +4,6 @@ cd /admin/iscan
 
 . functions
 
-funstart procscan
-
-runfile='/tmp/procscan'
-
-if [ -f $runfile ]; then
-  exit 2
-else
-  touch $runfile
-fi
-
 ctime=`date +%s`
 
 for i in `echo "select addid from address where status=2" | $MYSQLQ`; do
@@ -32,6 +22,4 @@ for i in `echo "select addid from address where status=2" | $MYSQLQ`; do
   fi
 done
 
-funstop procscan
-
-rm -rf $runfile
+funstop $processname

@@ -4,18 +4,8 @@ cd /admin/iscan
 
 . functions
 
-funstart scanadd
-
-runfile='/tmp/scanadd'
 runlimit=`cat config | grep AddressScanRun | gawk -F= '{ print $2 }'`
 addrdir=`cat config | grep FileAddrDir | gawk -F= '{ print $2 }'`
-runcount=5
-
-if [ -f $runfile ]; then
-  exit 2
-else
-  touch $runfile
-fi
 
 for i in `echo "select addid from address where status=1 limit $runlimit" | $MYSQLQ`; do
   address=`echo "select ipaddr from address where addid='$i'" | $MYSQLQ`
@@ -25,6 +15,4 @@ for i in `echo "select addid from address where status=1 limit $runlimit" | $MYS
 
 done
 
-funstop scanadd
-
-rm -rf $runfile
+funstop $processname

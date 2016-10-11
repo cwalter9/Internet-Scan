@@ -4,15 +4,7 @@ cd /admin/iscan
 
 . functions
 
-runfile='/tmp/filladdr'
 rlimit=`cat config | grep AddressHostRun | gawk -F= '{ print $2 }'`
-
-if [ -f $runfile ]; then
-  exit 2
-else
-  touch $runfile
-fi
-
 
 for i in `echo "select addid from address where ipaddr is null and status=0 limit $rlimit" | $MYSQLQ`; do
   oct1=`echo "select oct1 from address where addid='$i'" | $MYSQLQ`
@@ -25,4 +17,4 @@ for i in `echo "select addid from address where ipaddr is null and status=0 limi
 
 done
 
-rm -rf $runfile
+funstop $processname
