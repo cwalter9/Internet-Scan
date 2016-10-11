@@ -44,7 +44,7 @@ function checkprocess {
     exit 2
   else
     touch $2
-#    cat $$ > $2
+    echo "$$" > $2
   fi
 }
 
