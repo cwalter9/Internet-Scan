@@ -4,16 +4,6 @@ cd /admin/iscan
 
 . functions
 
-funstart proxycheck
-
-runfile='/tmp/proxycheck'
-
-if [ -f $runfile ]; then
-  exit 2
-else
-  touch $runfile
-fi
-
 for cport in `echo "select vfield from vars where vname='proxy'" | $MYSQLQ`; do
 
   for i in `echo "select poid from ports where port='$cport' and status=0" | $MYSQLQ`; do
@@ -39,8 +29,4 @@ for cport in `echo "select vfield from vars where vname='proxy'" | $MYSQLQ`; do
   done
 done
 
-
-funstop proxycheck
-
-rm -rf $runfile
-
+funstop $processname

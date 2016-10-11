@@ -1,18 +1,7 @@
 #!/bin/bash
 
 cd /admin/iscan
-
 . functions
-
-funstart resethost
-
-runfile='/tmp/resethost'
-
-if [ -f $runfile ]; then
-  exit 2
-else
-  touch $runfile
-fi
 
 ctime=`date +%s`
 ctime=`echo "$ctime - 604800" | bc`
@@ -20,9 +9,7 @@ ctime=`echo "$ctime - 604800" | bc`
 for i in `echo "select addid from address where utime<$ctime and status=4 limit 1" | $MYSQLQ`; do
   ipaddr=`echo "select ipaddr from address where addid='$i'" | $MYSQLQ`
   resethost $ipaddr
-  echo "$i `date +%s` $ctime $ipaddr"
+#  echo "$i `date +%s` $ctime $ipaddr"
 done
 
-rm -rf $runfile
-
-funstop resethost
+funstop $processname
