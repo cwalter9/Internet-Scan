@@ -6,23 +6,12 @@ cd /admin/iscan
 
 . functions
 
-funstart dowork
-
 penable=`cat config | grep ProcEnable | gawk -F= '{ print $2 }'`
 
 if [ $penable -eq 0 ]; then
   dblog dowork "Exiting Processing disabled"
   exit 3
 fi
-
-if [ -f /tmp/dowork ]; then
-  echo "Already running!"
-  exit 2
-else
-  touch /tmp/dowork
-fi
-
-cd /admin/iscan
 
 bash randadd &
 bash filladdr &
@@ -33,10 +22,7 @@ bash proxycheck &
 bash cleanaddrdir &
 bash resethost &
 
-
 ftime=`date +%s`
 totime=`echo "$ftime - $stime" | bc`
 
-funstop dowork
-
-rm -rf /tmp/dowork
+funstop $processname
