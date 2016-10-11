@@ -1,21 +1,10 @@
 #!/bin/bash
 
-stime=`date +%s`
-
 cd /admin/iscan
 
 . functions
 
-funstart randadd
-
 runcount=`cat config | grep AddressNewPerRun | gawk -F= '{ print $2 }'`
-runfile='/tmp/randadd'
-
-if [ -f $runfile ]; then
-  exit 2
-else
-  touch $runfile
-fi
 
 lcount=0
 while [ $lcount -lt $runcount ]; do
@@ -49,9 +38,4 @@ echo "delete from address where oct1=172 and oct2=30" | $MYSQLQ
 echo "delete from address where oct1=172 and oct2=31" | $MYSQLQ
 echo "delete from address where oct1=192 and oct2=16" | $MYSQLQ
 
-ftime=`date +%s`
-totime=`echo "$ftime - $stime" | bc`
-
-funstop randadd
-
-rm -rf $runfile
+funstop $processname
