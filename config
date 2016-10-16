@@ -1,12 +1,8 @@
 DatabaseType=mysql
 DatabaseName=internetscan
+DatabaseSerial=18234
 FileTempDir=/tmp/
 FileAddrDir=/admin/address/
 FileWorkDir=/admin/iscan/
-MYSQLQ="mysql -Dinternetscan -s"
 ProcEnable=1
-AddressNewPerRun=2
-AddressScanRun=5
-AddressWorkRun=10
-AddressHostRun=100
 AgeHostXML=600

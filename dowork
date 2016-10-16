@@ -10,8 +10,19 @@ penable=`cat config | grep ProcEnable | gawk -F= '{ print $2 }'`
 
 if [ $penable -eq 0 ]; then
   dblog dowork "Exiting Processing disabled"
+  funstop $processname
   exit 3
 fi
+
+dbserial=`echo "select vfield from vars where vname='dbserial'" | $MYSQLQ`
+fcserial=`cat config | grep DatabaseSerial | gawk -F= '{ print $2 }'`
+
+if [ $dbserial -neq $fcserial ]; then
+  dblog dowork "DB is down or wrong"
+  funstop $processname
+  exit 4
+fi
+
 
 bash randadd &
 bash filladdr &

@@ -1,10 +1,10 @@
-#!/bin/bash
+#!/bin/bash --login
 
 cd /admin/iscan
 
 . functions
 
-runlimit=`cat config | grep AddressWorkRun | gawk -F= '{ print $2 }'`
+runlimit=`echo "select vfield from vars where vname='hostworkrun'" | $MYSQLQ`
 
 chkmkdir /tmp/xml
 
@@ -19,5 +19,8 @@ for i in `echo "select addid from address where status=3 and updown=1 limit $run
   done
   echo "update address set status=4 where addid='$i'" | $MYSQLQ
 done
+
+funavgtime $processname
+funproctime hostworkrun
 
 funstop $processname

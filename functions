@@ -1,4 +1,4 @@
-MYSQLQ="mysql -Dinternetscan -s"
+MYSQLQ="mysql -hrdbhost -uscanuser -pscanpass -Dinternetscan -s"
 cdate=`date +%F`
 
 function getvar {
@@ -7,6 +7,7 @@ function getvar {
 
 function dblog {
   echo "insert into log set pid='$1',entry='$2'" | $MYSQLQ
+  echo "delete from log where pid='monitor'" | $MYSQLQ
 }
 
 workdir=`getvar FileWorkDir`
@@ -20,13 +21,6 @@ function checkproxy {
 function funstart {
   stime=`date +%s`
   dblog $1 "Start $stime"
-}
-
-function funstop {
-  ftime=`date +%s`
-  totime=`echo "$ftime - $stime" | bc`
-  rm -rf $runfile
-  dblog $1 "Finish $totime"
 }
 
 function resethost {
@@ -52,6 +46,58 @@ function chkmkdir {
   if [ ! -d $1 ]; then
     mkdir $1
   fi
+}
+
+function funavgtime {
+  licnt=`cat /tmp/.$1 | wc -l`
+  secnt=0
+
+  for i in `cat /tmp/.$1`; do
+    secnt=`echo "$secnt + $i" | bc`
+  done
+
+  procavgtime=`echo "$secnt / $licnt" | bc`
+
+}
+
+function funproctime {
+  if [ $procavgtime -lt 15 ]; then
+    runlimit=`echo "$runlimit + 1" | bc`
+    echo "update vars set vfield=$runlimit where vname='$1'" | $MYSQLQ
+  fi
+
+  if [ $procavgtime -gt 45 ]; then
+    runlimit=`echo "$runlimit - 1" | bc`
+    if [ $runlimit -lt 1 ]; then
+      runlimit=1
+    fi
+    echo "update vars set vfield=$runlimit where vname='$1'" | $MYSQLQ
+  fi
+}
+
+function funcleanptimefile {
+  licnt=`cat /tmp/.$1 | wc -l`
+
+  if [ $licnt -gt 6 ]; then
+    sed -i -e '1,2d' /tmp/.$1
+  fi
+  while [ $licnt -gt 10 ]; do
+    sed -i -e '1d' /tmp/.$1
+    licnt=`cat /tmp/.$1 | wc -l`
+  done
+}
+
+function funstop {
+  ftime=`date +%s`
+  totime=`echo "$ftime - $stime" | bc`
+  rm -rf $runfile
+  dblog $1 "Finish $totime"
+  if [ -f /tmp/.$1 ]; then
+    echo $totime >> /tmp/.$1
+  else
+    echo $totime > /tmp/.$1
+  fi
+  funcleanptimefile $1
 }
 
 processname=`echo $0 | sed 's/.\///'`

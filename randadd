@@ -4,10 +4,10 @@ cd /admin/iscan
 
 . functions
 
-runcount=`cat config | grep AddressNewPerRun | gawk -F= '{ print $2 }'`
+runlimit=`echo "select vfield from vars where vname='randaddrun'" | $MYSQLQ`
 
 lcount=0
-while [ $lcount -lt $runcount ]; do
+while [ $lcount -lt $runlimit ]; do
   oct1=`shuf -i1-255 -n1`
   oct2=`shuf -i1-255 -n1`
   oct3=`shuf -i1-255 -n1`
@@ -37,5 +37,9 @@ echo "delete from address where oct1=172 and oct2=29" | $MYSQLQ
 echo "delete from address where oct1=172 and oct2=30" | $MYSQLQ
 echo "delete from address where oct1=172 and oct2=31" | $MYSQLQ
 echo "delete from address where oct1=192 and oct2=16" | $MYSQLQ
+
+
+funavgtime $processname
+funproctime randaddrun
 
 funstop $processname

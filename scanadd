@@ -4,15 +4,18 @@ cd /admin/iscan
 
 . functions
 
-runlimit=`cat config | grep AddressScanRun | gawk -F= '{ print $2 }'`
+runlimit=`echo "select vfield from vars where vname='scanaddrun'" | $MYSQLQ`
 addrdir=`cat config | grep FileAddrDir | gawk -F= '{ print $2 }'`
 
 for i in `echo "select addid from address where status=1 limit $runlimit" | $MYSQLQ`; do
   address=`echo "select ipaddr from address where addid='$i'" | $MYSQLQ`
 
-  nmap --host-timeout 30 -sn "$address" -oG address/$address
+  nmap --host-timeout 15 -sn "$address" -oG address/$address
   echo "update address set status=2 where addid='$i'" | $MYSQLQ
 
 done
+
+funavgtime $processname
+funproctime scanaddrun
 
 funstop $processname

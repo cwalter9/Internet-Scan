@@ -4,9 +4,11 @@ cd /admin/iscan
 
 . functions
 
+runlimit=`echo "select vfield from vars where vname='procscanrun'" | $MYSQLQ`
+
 ctime=`date +%s`
 
-for i in `echo "select addid from address where status=2" | $MYSQLQ`; do
+for i in `echo "select addid from address where status=2 limit $runlimit" | $MYSQLQ`; do
   ipaddr=`echo "select ipaddr from address where addid='$i'" | $MYSQLQ`
   if [ -f address/$ipaddr ]; then
 
@@ -21,5 +23,8 @@ for i in `echo "select addid from address where status=2" | $MYSQLQ`; do
     fi
   fi
 done
+
+funavgtime $processname
+funproctime procscanrun
 
 funstop $processname

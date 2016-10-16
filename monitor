@@ -18,4 +18,6 @@ echo "---------------------------------------------"
 echo "Proxy hosts found: `echo "select count(*) from service where service='proxy'" | $MYSQLQ`"
 echo "Hosts reset: `echo "select count(*) from log where entry like 'Resetting%'" | $MYSQLQ`"
 
+echo "delete from log where pid='monitor'" | $MYSQLQ
+
 funstop $processname

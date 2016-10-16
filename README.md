@@ -1,5 +1,14 @@
 # Internet-Scan
 
+You will need to change this line in functions:
+
+MYSQLQ="mysql -hrdbhost -uscanuser -pscanpass -Dinternetscan -s"
+
+-h hostname
+-u db username
+-p db password
+-D db name
+
 Requirements:
 
 bind-utils

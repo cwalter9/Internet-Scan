@@ -4,9 +4,11 @@ cd /admin/iscan
 
 . functions
 
+runlimit=`echo "select vfield from vars where vname='proxycheckrun'" | $MYSQLQ`
+
 for cport in `echo "select vfield from vars where vname='proxy'" | $MYSQLQ`; do
 
-  for i in `echo "select poid from ports where port='$cport' and status=0" | $MYSQLQ`; do
+  for i in `echo "select poid from ports where port='$cport' and status=0 limit $runlimit" | $MYSQLQ`; do
     addid=`echo "select addid from ports where poid='$i'" | $MYSQLQ`
     caddr=`echo "select ipaddr from address where addid='$addid'" | $MYSQLQ`
     pcheck="http://$caddr:$cport"
@@ -28,5 +30,8 @@ for cport in `echo "select vfield from vars where vname='proxy'" | $MYSQLQ`; do
 
   done
 done
+
+funavgtime $processname
+funproctime proxycheckrun
 
 funstop $processname
