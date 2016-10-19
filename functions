@@ -1,13 +1,39 @@
 MYSQLQ="mysql -hrdbhost -uscanuser -pscanpass -Dinternetscan -s"
+MYSQLR="mysql -Dinternetscan -s"
 cdate=`date +%F`
+
+function fundbcheck {
+  dbserial=`echo "select vfield from vars where vname='dbserial'" | $MYSQLQ`
+  fcserial=`cat config | grep DatabaseSerial | gawk -F= '{ print $2 }'`
+
+  if [ $dbserial -neq $fcserial ]; then
+    dblog dowork "DB is down or wrong"
+    funstop $processname
+    exit 4
+  fi
+}
+
+function funproccheck {
+  penable=`cat config | grep ProcEnable | gawk -F= '{ print $2 }'`
+
+  if [ $penable -eq 0 ]; then
+    dblog dowork "Exiting Processing disabled"
+    funstop $processname
+    exit 3
+  fi
+}
 
 function getvar {
   cat config | grep $1 | gawk -F= '{ print $2 }'
 }
 
 function dblog {
-  echo "insert into log set pid='$1',entry='$2'" | $MYSQLQ
+  echo "insert into log set shid='$shid',pid='$1',entry='$2'" | $MYSQLQ
   echo "delete from log where pid='monitor'" | $MYSQLQ
+}
+
+function pstatdblog {
+  echo "insert into log set shid='$shid',pid='$1',pstat='$2',ptime='$3',entry='$4'" | $MYSQLQ
 }
 
 workdir=`getvar FileWorkDir`
@@ -20,14 +46,15 @@ function checkproxy {
 
 function funstart {
   stime=`date +%s`
-  dblog $1 "Start $stime"
+  pstatdblog $1 1 $stime "Start"
+  vnamerun=`echo "$processname run" | gawk '{ print $1$2 }'`
+  runlimit=`echo "select vfield from vars where vname='$vnamerun'" | $MYSQLQ`
 }
 
 function resethost {
   dblog reset "Resetting host $1 for rescan"
-  addid=`echo "select addid from address where ipaddr='$1'" | $MYSQLQ`
-  echo "delete from ports where addid='$addid'" | $MYSQLQ
-  echo "delete from service where addid='$addid'" | $MYSQLQ
+  echo "delete from ports where ipaddr='$1'" | $MYSQLQ
+  echo "delete from service where ipaddr='$1'" | $MYSQLQ
   ctime=`date +%s`
   echo "update address set status=1,updown=0,utime='$ctime' where ipaddr='$1'" | $MYSQLQ
 }
@@ -49,10 +76,10 @@ function chkmkdir {
 }
 
 function funavgtime {
-  licnt=`cat /tmp/.$1 | wc -l`
+  licnt=`cat $ptlfile | wc -l`
   secnt=0
 
-  for i in `cat /tmp/.$1`; do
+  for i in `cat $ptlfile`; do
     secnt=`echo "$secnt + $i" | bc`
   done
 
@@ -61,12 +88,18 @@ function funavgtime {
 }
 
 function funproctime {
-  if [ $procavgtime -lt 15 ]; then
+  ptimemin=`echo "select vfield from vars where vname='ptimemin'" | $MYSQLQ`
+  ptimemax=`echo "select vfield from vars where vname='ptimemax'" | $MYSQLQ`
+  pmaxloop=`echo "select vfield from vars where vname='pmaxloop'" | $MYSQLQ`
+  if [ $procavgtime -lt $ptimemin ]; then
     runlimit=`echo "$runlimit + 1" | bc`
+    if [ $runlimit -gt $pmaxloop ]; then
+      runlimit=$pmaxloop
+    fi
     echo "update vars set vfield=$runlimit where vname='$1'" | $MYSQLQ
   fi
 
-  if [ $procavgtime -gt 45 ]; then
+  if [ $procavgtime -gt $ptimemax ]; then
     runlimit=`echo "$runlimit - 1" | bc`
     if [ $runlimit -lt 1 ]; then
       runlimit=1
@@ -76,14 +109,12 @@ function funproctime {
 }
 
 function funcleanptimefile {
-  licnt=`cat /tmp/.$1 | wc -l`
+  licnt=`cat $ptlfile | wc -l`
+  timelicnt=`echo "select vfield from vars where vname='timelines'" | $MYSQLQ`
 
-  if [ $licnt -gt 6 ]; then
-    sed -i -e '1,2d' /tmp/.$1
-  fi
-  while [ $licnt -gt 10 ]; do
-    sed -i -e '1d' /tmp/.$1
-    licnt=`cat /tmp/.$1 | wc -l`
+  while [ $licnt -gt $timelicnt ]; do
+    sed -i -e '1d' $ptlfile
+    licnt=`cat $ptlfile | wc -l`
   done
 }
 
@@ -91,16 +122,24 @@ function funstop {
   ftime=`date +%s`
   totime=`echo "$ftime - $stime" | bc`
   rm -rf $runfile
-  dblog $1 "Finish $totime"
-  if [ -f /tmp/.$1 ]; then
-    echo $totime >> /tmp/.$1
+  pstatdblog $1 2 $totime "Finish"
+  if [ -f $ptlfile ]; then
+    echo $totime >> $ptlfile
   else
-    echo $totime > /tmp/.$1
+    echo $totime > $ptlfile
   fi
+  funavgtime $processname
+  funproctime $vnamerun
   funcleanptimefile $1
+
+#  set > /tmp/$vnamerun
 }
 
+chkmkdir /tmp/run
+chkmkdir /tmp/ptlog
+
 processname=`echo $0 | sed 's/.\///'`
+runfile="/tmp/run/$processname"
+ptlfile="/tmp/ptlog/$processname"
 funstart $processname
-runfile="/tmp/$processname"
 checkprocess $processname $runfile

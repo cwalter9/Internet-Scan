@@ -3,37 +3,23 @@
 stime=`date +%s`
 
 cd /admin/iscan
-
 . functions
 
-penable=`cat config | grep ProcEnable | gawk -F= '{ print $2 }'`
+funproccheck
+fundbcheck
 
-if [ $penable -eq 0 ]; then
-  dblog dowork "Exiting Processing disabled"
-  funstop $processname
-  exit 3
+scannerhost=`cat config | grep ScannerHost | gawk -F= '{ print $2 }'`
+shid=`echo "select shid from scanners where scanhost='$scannerhost'" | $MYSQLR`
+
+if [ -z $shid ]; then
+  echo "insert ignore into scanners set scanhost='$scannerhost',status=0" | $MYSQLQ
+  shid=`echo "select shid from scanners where scanhost='$scannerhost'" | $MYSQLR`
 fi
 
-dbserial=`echo "select vfield from vars where vname='dbserial'" | $MYSQLQ`
-fcserial=`cat config | grep DatabaseSerial | gawk -F= '{ print $2 }'`
+export shid
 
-if [ $dbserial -neq $fcserial ]; then
-  dblog dowork "DB is down or wrong"
-  funstop $processname
-  exit 4
-fi
-
-
-bash randadd &
-bash filladdr &
-bash scanadd &
-bash procscan &
-bash hostwork &
-bash proxycheck &
-bash cleanaddrdir &
-bash resethost &
-
-ftime=`date +%s`
-totime=`echo "$ftime - $stime" | bc`
+for i in `echo "select vname from vars where vfield=1" | $MYSQLR | gawk -F- '{ print $2 }'`; do
+  bash $i &
+done
 
 funstop $processname

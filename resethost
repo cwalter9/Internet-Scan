@@ -3,18 +3,26 @@
 cd /admin/iscan
 . functions
 
-runlimit=`echo "select vfield from vars where vname='resethostrun'" | $MYSQLQ`
-
 ctime=`date +%s`
 ctime=`echo "$ctime - 604800" | bc`
 
-for i in `echo "select addid from address where utime<$ctime and status=4 limit $runlimit" | $MYSQLQ`; do
-  ipaddr=`echo "select ipaddr from address where addid='$i'" | $MYSQLQ`
-  resethost $ipaddr
-  sleep 5
+for i in `echo "select ipaddr from address where utime<$ctime and status=4 limit $runlimit" | $MYSQLQ`; do
+  resethost $i
 done
 
-funavgtime $processname
-funproctime resethostrun
+#
+# Averege the runtime of processes and then set reset hosts accordingly.
+#
+
+cruncnt=0
+encnt=0
+
+for i in `echo "select vfield from vars where vname like '%run'" | $MYSQLQ`; do
+  cruncnt=`echo "$cruncnt + $i" | bc`
+  encnt=`echo "$encnt +1" | bc`
+done
+
+resethostrun=`echo "$cruncnt / $encnt / 2" | bc`
+echo "update vars set vfield='$resethostrun' where vname='resethostrun'" | $MYSQLQ
 
 funstop $processname

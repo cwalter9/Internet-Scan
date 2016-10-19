@@ -1,3 +1,4 @@
+ScannerHost=centos7
 DatabaseType=mysql
 DatabaseName=internetscan
 DatabaseSerial=18234

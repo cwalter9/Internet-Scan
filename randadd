@@ -4,42 +4,38 @@ cd /admin/iscan
 
 . functions
 
-runlimit=`echo "select vfield from vars where vname='randaddrun'" | $MYSQLQ`
+lcount=0
+while [ $lcount -lt $runlimit ]; do
+  ipaddr="4.`shuf -i1-255 -n1`.`shuf -i1-255 -n1`.`shuf -i1-255 -n1`"
+  echo "insert ignore into address set ipaddr='$ipaddr',adddate='$cdate',status=1" | $MYSQLQ
+  dblog randadd "Added $ipaddr"
+  lcount=`echo "$lcount + 1" | bc`
+done
 
 lcount=0
 while [ $lcount -lt $runlimit ]; do
-  oct1=`shuf -i1-255 -n1`
-  oct2=`shuf -i1-255 -n1`
-  oct3=`shuf -i1-255 -n1`
-  oct4=`shuf -i1-255 -n1`
-  addid=`echo "select addid from address where oct1='$oct1' and oct2='$oct2' and oct3='$oct3' and oct4='$oct4'" | $MYSQLQ`
-  if [ -z $addid ]; then
-    echo "insert into address set oct1='$oct1',oct2='$oct2',oct3='$oct3',oct4='$oct4',adddate='$cdate'" | $MYSQLQ
-    lcount=`echo "$lcount + 1" | bc`
-  fi
+  ipaddr="107.`shuf -i1-255 -n1`.`shuf -i1-255 -n1`.`shuf -i1-255 -n1`"
+  echo "insert ignore into address set ipaddr='$ipaddr',adddate='$cdate',status=1" | $MYSQLQ
+  dblog randadd "Added $ipaddr"
+  lcount=`echo "$lcount + 1" | bc`
 done
 
-echo "delete from address where oct1=10" | $MYSQLQ
-echo "delete from address where oct1=172 and oct2=16" | $MYSQLQ
-echo "delete from address where oct1=172 and oct2=17" | $MYSQLQ
-echo "delete from address where oct1=172 and oct2=18" | $MYSQLQ
-echo "delete from address where oct1=172 and oct2=19" | $MYSQLQ
-echo "delete from address where oct1=172 and oct2=20" | $MYSQLQ
-echo "delete from address where oct1=172 and oct2=21" | $MYSQLQ
-echo "delete from address where oct1=172 and oct2=22" | $MYSQLQ
-echo "delete from address where oct1=172 and oct2=23" | $MYSQLQ
-echo "delete from address where oct1=172 and oct2=24" | $MYSQLQ
-echo "delete from address where oct1=172 and oct2=25" | $MYSQLQ
-echo "delete from address where oct1=172 and oct2=26" | $MYSQLQ
-echo "delete from address where oct1=172 and oct2=27" | $MYSQLQ
-echo "delete from address where oct1=172 and oct2=28" | $MYSQLQ
-echo "delete from address where oct1=172 and oct2=29" | $MYSQLQ
-echo "delete from address where oct1=172 and oct2=30" | $MYSQLQ
-echo "delete from address where oct1=172 and oct2=31" | $MYSQLQ
-echo "delete from address where oct1=192 and oct2=16" | $MYSQLQ
+lcount=0
+while [ $lcount -lt $runlimit ]; do
+  ipaddr="`shuf -i1-255 -n1`.`shuf -i1-255 -n1`.`shuf -i1-255 -n1`.`shuf -i1-255 -n1`"
+  echo "insert ignore into address set ipaddr='$ipaddr',adddate='$cdate',status=1" | $MYSQLQ
+  dblog randadd "Added $ipaddr"
+  lcount=`echo "$lcount + 1" | bc`
+done
 
-
-funavgtime $processname
-funproctime randaddrun
+echo "delete from address where ipaddr like '10.%'" | $MYSQLQ
+echo "delete from address where ipaddr like '172.16%'" | $MYSQLQ
+echo "delete from address where ipaddr like '172.17%'" | $MYSQLQ
+echo "delete from address where ipaddr like '172.18%'" | $MYSQLQ
+echo "delete from address where ipaddr like '172.19%'" | $MYSQLQ
+echo "delete from address where ipaddr like '172.2%'" | $MYSQLQ
+echo "delete from address where ipaddr like '172.30%'" | $MYSQLQ
+echo "delete from address where ipaddr like '172.31%'" | $MYSQLQ
+echo "delete from address where ipaddr like '192.16%'" | $MYSQLQ
 
 funstop $processname

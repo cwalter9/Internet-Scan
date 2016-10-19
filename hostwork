@@ -1,26 +1,20 @@
 #!/bin/bash --login
 
 cd /admin/iscan
-
+ 
 . functions
-
-runlimit=`echo "select vfield from vars where vname='hostworkrun'" | $MYSQLQ`
 
 chkmkdir /tmp/xml
 
-for i in `echo "select addid from address where status=3 and updown=1 limit $runlimit" | $MYSQLQ`; do
-  ipaddr=`echo "select ipaddr from address where addid='$i'" | $MYSQLQ`
-  if [ ! -f /tmp/xml/$ipaddr ]; then
-    nmap --host-timeout 30 -oX /tmp/xml/$ipaddr $ipaddr
+for i in `echo "select ipaddr from address where status=3 and updown=1 limit $runlimit" | $MYSQLR`; do
+  if [ ! -f /tmp/xml/$i ]; then
+    nmap --host-timeout 30 -oX /tmp/xml/$i $i
   fi
-  for f in `cat /tmp/xml/$ipaddr | grep "port protocol" | gawk -F\" '{ print $4 }'`; do
+  for f in `cat /tmp/xml/$i | grep "port protocol" | gawk -F\" '{ print $4 }'`; do
     chtime=`date +%s`
-    echo "insert into ports set addid='$i',port='$f',chtime='$chtime'" | $MYSQLQ
+    echo "insert into ports set ipaddr='$i',port='$f',chtime='$chtime'" | $MYSQLQ
   done
-  echo "update address set status=4 where addid='$i'" | $MYSQLQ
+  echo "update address set status=4 where ipaddr='$i'" | $MYSQLQ
 done
-
-funavgtime $processname
-funproctime hostworkrun
 
 funstop $processname

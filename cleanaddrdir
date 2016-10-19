@@ -4,41 +4,33 @@ cd /admin/iscan
 
 . functions
 
-runlimit=`echo "select vfield from vars where vname='cleanaddrdirrun'" | $MYSQLQ`
-
 cage=`cat config | grep AgeHostXML | gawk -F= '{ print $2 }'`
 ctime=`date +%s`
 ctime=`echo "$ctime - $cage" | bc`
 
 rmcount=0
 
-for i in `echo "select addid from ports where chtime<'$ctime' limit $runlimit" | $MYSQLQ | sort | uniq`; do
-  for h in `echo "select ipaddr from address where addid='$i' and fcstat=1" | $MYSQLQ`; do
-#    echo "$i $h"
-    rm -rf address/$h
-    rmcount=`echo "$rmcount + 1" | bc`
-  done
+for i in `echo "select ipaddr from ports where chtime<'$ctime' limit $runlimit" | $MYSQLR | sort | uniq`; do
+  rm -rf address/$i &
+  rmcount=`echo "$rmcount + 1" | bc`
 done
 
-for i in `echo "select ipaddr from address where status=3 and updown=0 and fcstat=1 limit $runlimit" | $MYSQLQ`; do
-  rm -rf address/$i
+for i in `echo "select ipaddr from address where status=3 and updown=0 and fcstat=1 limit $runlimit" | $MYSQLR`; do
+  rm -rf address/$i &
   echo "update address set fcstat=0 where ipaddr='$i'" | $MYSQLQ
   rmcount=`echo "$rmcount + 1" | bc`
 done
 
-for i in `echo "select ipaddr from address where status=4 and fcstat=1 limit $runlimit" | $MYSQLQ`; do
-  rm -rf address/$i
+for i in `echo "select ipaddr from address where status=4 and fcstat=1 limit $runlimit" | $MYSQLR`; do
+  rm -rf address/$i &
   echo "update address set fcstat=0 where ipaddr='$i'" | $MYSQLQ
   rmcount=`echo "$rmcount + 1" | bc`
 done
 
 dblog cleanaddrdir "Removed $rmcount files"
 
-for i in `ls address/`; do
-  echo "update address set fcstat=1 where ipaddr='$i'" | $MYSQLQ
-done
-
-funavgtime $processname
-funproctime cleanaddrdirrun
+#for i in `ls address/`; do
+#  echo "update address set fcstat=1 where ipaddr='$i'" | $MYSQLQ
+#done
 
 funstop cleanaddrdir

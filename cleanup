@@ -4,7 +4,13 @@ cd /admin/iscan
 
 . functions
 
-for i in `echo "select ipaddr from address where status=2 and updown=0" | $MYSQLQ`; do
+addfilecnt=`ls -la address/ | wc -l`
+
+if [ $addfilecnt -gt 10000 ]; then
+  echo "update vars set vfield=1 where vname='scanaddrun'" | $MYSQLQ
+fi
+
+for i in `echo "select ipaddr from address where status=2 and updown=0 limit $runlimit" | $MYSQLQ`; do
   rm -rf address/$i
 done
 

@@ -4,27 +4,19 @@ cd /admin/iscan
 
 . functions
 
-runlimit=`echo "select vfield from vars where vname='procscanrun'" | $MYSQLQ`
-
 ctime=`date +%s`
 
-for i in `echo "select addid from address where status=2 limit $runlimit" | $MYSQLQ`; do
-  ipaddr=`echo "select ipaddr from address where addid='$i'" | $MYSQLQ`
-  if [ -f address/$ipaddr ]; then
+for i in `echo "select ipaddr from address where status=2 limit $runlimit" | $MYSQLQ`; do
+  if [ -f address/$i ]; then
 
-    upstat=`cat address/$ipaddr | grep "Status: Up" | wc -l`
+    upstat=`cat address/$i | grep "Status: Up" | wc -l`
 
     if [ $upstat -eq 1 ]; then
-      echo "update address set updown=1,status=3,utime='$ctime' where addid='$i'" | $MYSQLQ
-#      echo "$i $ipaddr $upstat 3"
+      echo "update address set updown=1,status=3,utime='$ctime' where ipaddr='$i'" | $MYSQLQ
     else
-      echo "update address set updown=0,status=3,utime='$ctime' where addid='$i'" | $MYSQLQ
-#      echo "$i $ipaddr $upstat 3"
+      echo "update address set updown=0,status=3,utime='$ctime' where ipaddr='$i'" | $MYSQLQ
     fi
   fi
 done
-
-funavgtime $processname
-funproctime procscanrun
 
 funstop $processname

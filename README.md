@@ -13,6 +13,8 @@ Requirements:
 
 bind-utils
 nmap
+fetchmail
+mailx
 
 -monitor
 

@@ -2,22 +2,26 @@
 
 cd /admin/iscan
 
-. functions
+MYSQLQ="mysql -hrdbhost -uscanuser -pscanpass -Dinternetscan -s"
+MYSQLR="mysql -Dinternetscan -s"
 
-echo "Null addresses: `echo "select count(*) from address where ipaddr is null" | $MYSQLQ`"
-echo "Waiting to be scanned: `echo "select count(*) from address where status=1" | $MYSQLQ`"
-echo "Waiting to be processed: `echo "select count(*) from address where status=2" | $MYSQLQ`"
-echo "Waiting port scan: `echo "select count(*) from address where status=3 and updown=1" | $MYSQLQ`"
-echo "Hosts processed: `echo "select count(*) from address where status=4" | $MYSQLQ`"
+echo "Waiting to be scanned: `echo "select count(*) from address where status=1" | $MYSQLR`"
+echo "Waiting to be processed: `echo "select count(*) from address where status=2" | $MYSQLR`"
+echo "Waiting port scan: `echo "select count(*) from address where status=3 and updown=1" | $MYSQLR`"
+echo "Hosts processed: `echo "select count(*) from address where status=4" | $MYSQLR`"
 echo "---------------------------------------------"
-echo "IP found: `echo "select count(*) from address" | $MYSQLQ`"
-echo "Hosts found: `echo "select count(*) from address where status>2 and updown=1" | $MYSQLQ`"
-echo "Ports count: `echo "select count(*) from ports" | $MYSQLQ`"
+echo "IP found: `echo "select count(*) from address" | $MYSQLR`"
+echo "Hosts found: `echo "select count(*) from address where status>2 and updown=1" | $MYSQLR`"
+echo "Ports count: `echo "select count(*) from ports" | $MYSQLR`"
 echo "Addr files: `ls -la address/* | wc -l`"
 echo "---------------------------------------------"
-echo "Proxy hosts found: `echo "select count(*) from service where service='proxy'" | $MYSQLQ`"
-echo "Hosts reset: `echo "select count(*) from log where entry like 'Resetting%'" | $MYSQLQ`"
+echo "Proxy hosts found: `echo "select count(*) from service where service='proxy'" | $MYSQLR`"
+# echo "Hosts reset: `echo "select count(*) from log where entry like 'Resetting%'" | $MYSQLR`"
+
+# echo "SHOW SLAVE STATUS" | $MYSQLR
+# echo "SHOW MASTER STATUS" | $MYSQLQ
 
 echo "delete from log where pid='monitor'" | $MYSQLQ
 
-funstop $processname
+# funstop $processname
+rm -rf /tmp/monitor
