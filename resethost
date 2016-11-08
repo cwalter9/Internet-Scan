@@ -6,7 +6,7 @@ cd /admin/iscan
 ctime=`date +%s`
 ctime=`echo "$ctime - 604800" | bc`
 
-for i in `echo "select ipaddr from address where utime<$ctime and status=4 limit $runlimit" | $MYSQLQ`; do
+for i in `echo "select ipaddr from address where utime<$ctime and status=4 and shid='$shid' limit $runlimit" | $MYSQLR`; do
   resethost $i
 done
 
@@ -14,15 +14,15 @@ done
 # Averege the runtime of processes and then set reset hosts accordingly.
 #
 
-cruncnt=0
-encnt=0
+#cruncnt=0
+#encnt=0
 
-for i in `echo "select vfield from vars where vname like '%run'" | $MYSQLQ`; do
-  cruncnt=`echo "$cruncnt + $i" | bc`
-  encnt=`echo "$encnt +1" | bc`
-done
+#for i in `echo "select vfield from vars where vname like '%run'" | $MYSQLQ`; do
+#  cruncnt=`echo "$cruncnt + $i" | bc`
+#  encnt=`echo "$encnt +1" | bc`
+#done
 
-resethostrun=`echo "$cruncnt / $encnt / 2" | bc`
-echo "update vars set vfield='$resethostrun' where vname='resethostrun'" | $MYSQLQ
+#resethostrun=`echo "$cruncnt / $encnt / 2" | bc`
+#echo "update vars set vfield='$resethostrun' where vname='resethostrun'" | $MYSQLQ
 
 funstop $processname

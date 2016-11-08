@@ -1,13 +1,27 @@
 MYSQLQ="mysql -hrdbhost -uscanuser -pscanpass -Dinternetscan -s"
-MYSQLR="mysql -Dinternetscan -s"
+MYSQLR="mysql -hrdbhost -uscanuser -pscanpass -Dinternetscan -s"
 cdate=`date +%F`
+
+scannerhost=`cat config | grep ScannerHost | gawk -F= '{ print $2 }'`
+shid=`echo "select shid from scanners where scanhost='$scannerhost'" | $MYSQLR`
+
+function txtlog {
+  tlogdate=`date +%c`
+#  txtlogdir='/var/log/iscan'
+  txtlogfile='/var/log/iscan.log'
+  if [ ! -f $txtlogfile ]; then
+    touch $txtlogfile
+  fi
+  echo "$tlogdate $1 $2" >> $txtlogfile
+}
 
 function fundbcheck {
   dbserial=`echo "select vfield from vars where vname='dbserial'" | $MYSQLQ`
   fcserial=`cat config | grep DatabaseSerial | gawk -F= '{ print $2 }'`
 
-  if [ $dbserial -neq $fcserial ]; then
+  if [ $dbserial -ne $fcserial ]; then
     dblog dowork "DB is down or wrong"
+    txtlog dowork "DB is down or wrong"
     funstop $processname
     exit 4
   fi
@@ -18,6 +32,7 @@ function funproccheck {
 
   if [ $penable -eq 0 ]; then
     dblog dowork "Exiting Processing disabled"
+    txtlog dowork "Exiting Processing disabled"
     funstop $processname
     exit 3
   fi
@@ -47,21 +62,23 @@ function checkproxy {
 function funstart {
   stime=`date +%s`
   pstatdblog $1 1 $stime "Start"
-  vnamerun=`echo "$processname run" | gawk '{ print $1$2 }'`
-  runlimit=`echo "select vfield from vars where vname='$vnamerun'" | $MYSQLQ`
 }
 
 function resethost {
   dblog reset "Resetting host $1 for rescan"
+  txtlog reset "Resetting host $1 for rescan"
   echo "delete from ports where ipaddr='$1'" | $MYSQLQ
   echo "delete from service where ipaddr='$1'" | $MYSQLQ
+# ctime should be removed after making sure it is not used
   ctime=`date +%s`
-  echo "update address set status=1,updown=0,utime='$ctime' where ipaddr='$1'" | $MYSQLQ
+  utime=`date +%s`
+  echo "update address set status=1,updown=0,utime=$utime where ipaddr='$1'" | $MYSQLQ
 }
 
 function checkprocess {
   if [ -f $2 ]; then
     dblog $1 "Already running exit 2"
+    txtlog $1 "Already running exit 2"
     exit 2
   else
     touch $2
@@ -88,15 +105,21 @@ function funavgtime {
 }
 
 function funproctime {
-  ptimemin=`echo "select vfield from vars where vname='ptimemin'" | $MYSQLQ`
-  ptimemax=`echo "select vfield from vars where vname='ptimemax'" | $MYSQLQ`
-  pmaxloop=`echo "select vfield from vars where vname='pmaxloop'" | $MYSQLQ`
+  ptimemin=`echo "select vfield from vars where vname='ptimemin'" | $MYSQLR`
+  ptimemax=`echo "select vfield from vars where vname='ptimemax'" | $MYSQLR`
+  pmaxloop=`echo "select vfield from vars where vname='pmaxloop'" | $MYSQLR`
+  if [ -z $pmaxloop ]; then
+    pmaxloop=100
+  fi
+  if [ -z $runlimit ]; then
+    runlimit=5
+  fi
   if [ $procavgtime -lt $ptimemin ]; then
     runlimit=`echo "$runlimit + 1" | bc`
     if [ $runlimit -gt $pmaxloop ]; then
       runlimit=$pmaxloop
     fi
-    echo "update vars set vfield=$runlimit where vname='$1'" | $MYSQLQ
+    echo "update proctab set rlimit=$runlimit where procname='$1' and shid='$shid'" | $MYSQLQ
   fi
 
   if [ $procavgtime -gt $ptimemax ]; then
@@ -104,7 +127,7 @@ function funproctime {
     if [ $runlimit -lt 1 ]; then
       runlimit=1
     fi
-    echo "update vars set vfield=$runlimit where vname='$1'" | $MYSQLQ
+    echo "update proctab set rlimit=$runlimit where procname='$1' and shid='$shid'" | $MYSQLQ
   fi
 }
 
@@ -129,16 +152,21 @@ function funstop {
     echo $totime > $ptlfile
   fi
   funavgtime $processname
-  funproctime $vnamerun
+  funproctime $processname
   funcleanptimefile $1
 
-#  set > /tmp/$vnamerun
+}
+
+function funuptimeaddr {
+  utime=`date +%s`
+  echo "update address set utime=$utime where ipaddr='$1'" | $MYSQLQ
 }
 
 chkmkdir /tmp/run
 chkmkdir /tmp/ptlog
 
 processname=`echo $0 | sed 's/.\///'`
+runlimit=`echo "select rlimit from proctab where procname='$processname' and shid='$shid'" | $MYSQLR`
 runfile="/tmp/run/$processname"
 ptlfile="/tmp/ptlog/$processname"
 funstart $processname

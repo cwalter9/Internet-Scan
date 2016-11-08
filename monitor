@@ -3,12 +3,15 @@
 cd /admin/iscan
 
 MYSQLQ="mysql -hrdbhost -uscanuser -pscanpass -Dinternetscan -s"
-MYSQLR="mysql -Dinternetscan -s"
+MYSQLR="mysql -hrdbhost -uscanuser -pscanpass -Dinternetscan -s"
+#MYSQLR="mysql -Dinternetscan -s"
 
-echo "Waiting to be scanned: `echo "select count(*) from address where status=1" | $MYSQLR`"
-echo "Waiting to be processed: `echo "select count(*) from address where status=2" | $MYSQLR`"
-echo "Waiting port scan: `echo "select count(*) from address where status=3 and updown=1" | $MYSQLR`"
-echo "Hosts processed: `echo "select count(*) from address where status=4" | $MYSQLR`"
+echo "Global address count: `echo "select count(*) from address" | $MYSQLR`"
+echo "Waiting to be assigned: `echo "select count(*) from address where status=1 and shid=0" | $MYSQLR`"
+echo "Waiting to be scanned: `echo "select count(*) from address where status=1 and shid=1" | $MYSQLR`"
+echo "Waiting to be processed: `echo "select count(*) from address where status=2 and shid=1" | $MYSQLR`"
+echo "Waiting port scan: `echo "select count(*) from address where status=3 and updown=1 and shid=1" | $MYSQLR`"
+echo "Hosts processed: `echo "select count(*) from address where status=4 and shid=1" | $MYSQLR`"
 echo "---------------------------------------------"
 echo "IP found: `echo "select count(*) from address" | $MYSQLR`"
 echo "Hosts found: `echo "select count(*) from address where status>2 and updown=1" | $MYSQLR`"

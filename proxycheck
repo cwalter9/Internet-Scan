@@ -6,7 +6,7 @@ cd /admin/iscan
 
 for cport in `echo "select vfield from vars where vname='proxy'" | $MYSQLR`; do
 
-  for i in `echo "select poid from ports where port='$cport' and status=0 limit $runlimit" | $MYSQLR`; do
+  for i in `echo "select poid from ports where port='$cport' and status=0 and shid=$shid limit $runlimit" | $MYSQLR`; do
     ipaddr=`echo "select ipaddr from ports where poid='$i'" | $MYSQLR`
     pcheck="http://$ipaddr:$cport"
 
@@ -17,14 +17,15 @@ for cport in `echo "select vfield from vars where vname='proxy'" | $MYSQLR`; do
     esac`
 
     if [ $presult -eq 1 ]; then
-      echo "update ports set status=1 where poid='$i' and ipaddr='$ipaddr'" | $MYSQLQ
-      echo "insert into service set ipaddr='$ipaddr',poid='$i',service='proxy'" | $MYSQLQ
+      echo "update ports set status=1,shid=$shid where poid='$i' and ipaddr='$ipaddr'" | $MYSQLQ
+      echo "insert into service set ipaddr='$ipaddr',poid='$i',service='proxy',shid=$shid" | $MYSQLQ
     elif [ $presult -eq 0 ]; then
-      echo "update ports set status=3 where poid='$i' and ipaddr='$ipaddr'" | $MYSQLQ
+      echo "update ports set status=3,shid=$shid where poid='$i' and ipaddr='$ipaddr'" | $MYSQLQ
     elif [ $presult -eq 2 ]; then
-      echo "update ports set status=2 where poid='$i' and ipaddr='$ipaddr'" | $MYSQLQ
+      echo "update ports set status=2,shid=$shid where poid='$i' and ipaddr='$ipaddr'" | $MYSQLQ
     fi
-
+  
+  funuptimeaddr $ipaddr
   done
 done
 

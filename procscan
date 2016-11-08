@@ -6,17 +6,19 @@ cd /admin/iscan
 
 ctime=`date +%s`
 
-for i in `echo "select ipaddr from address where status=2 limit $runlimit" | $MYSQLQ`; do
+for i in `echo "select ipaddr from address where status=2 and shid='$shid' limit $runlimit" | $MYSQLR`; do
   if [ -f address/$i ]; then
 
-    upstat=`cat address/$i | grep "Status: Up" | wc -l`
+    upstat=`cat address/$i | grep 'status state=\"up\"' | wc -l`
 
     if [ $upstat -eq 1 ]; then
       echo "update address set updown=1,status=3,utime='$ctime' where ipaddr='$i'" | $MYSQLQ
+      echo "insert into ipuplog set ipaddr='$i',status=1" | $MYSQLQ
     else
       echo "update address set updown=0,status=3,utime='$ctime' where ipaddr='$i'" | $MYSQLQ
     fi
   fi
+  funuptimeaddr $i
 done
 
 funstop $processname

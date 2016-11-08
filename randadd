@@ -3,23 +3,27 @@
 cd /admin/iscan
 
 . functions
+txtlog randadd Start
 
+tlcount=0
 lcount=0
 while [ $lcount -lt $runlimit ]; do
   ipaddr="4.`shuf -i1-255 -n1`.`shuf -i1-255 -n1`.`shuf -i1-255 -n1`"
-  echo "insert ignore into address set ipaddr='$ipaddr',adddate='$cdate',status=1" | $MYSQLQ
+  echo "insert into address set ipaddr='$ipaddr',adddate='$cdate',status=1" | $MYSQLQ
   dblog randadd "Added $ipaddr"
   lcount=`echo "$lcount + 1" | bc`
 done
 
+tlcount=`echo "$tlcount + $lcount" | bc`
 lcount=0
 while [ $lcount -lt $runlimit ]; do
-  ipaddr="107.`shuf -i1-255 -n1`.`shuf -i1-255 -n1`.`shuf -i1-255 -n1`"
+  ipaddr="107.11.163.`shuf -i1-255 -n1`"
   echo "insert ignore into address set ipaddr='$ipaddr',adddate='$cdate',status=1" | $MYSQLQ
   dblog randadd "Added $ipaddr"
   lcount=`echo "$lcount + 1" | bc`
 done
 
+tlcount=`echo "$tlcount + $lcount" | bc`
 lcount=0
 while [ $lcount -lt $runlimit ]; do
   ipaddr="`shuf -i1-255 -n1`.`shuf -i1-255 -n1`.`shuf -i1-255 -n1`.`shuf -i1-255 -n1`"
@@ -28,14 +32,19 @@ while [ $lcount -lt $runlimit ]; do
   lcount=`echo "$lcount + 1" | bc`
 done
 
+tlcount=`echo "$tlcount + $lcount" | bc`
+
 echo "delete from address where ipaddr like '10.%'" | $MYSQLQ
-echo "delete from address where ipaddr like '172.16%'" | $MYSQLQ
-echo "delete from address where ipaddr like '172.17%'" | $MYSQLQ
-echo "delete from address where ipaddr like '172.18%'" | $MYSQLQ
-echo "delete from address where ipaddr like '172.19%'" | $MYSQLQ
-echo "delete from address where ipaddr like '172.2%'" | $MYSQLQ
-echo "delete from address where ipaddr like '172.30%'" | $MYSQLQ
-echo "delete from address where ipaddr like '172.31%'" | $MYSQLQ
-echo "delete from address where ipaddr like '192.16%'" | $MYSQLQ
+echo "delete from address where ipaddr like '192.16.%'" | $MYSQLQ
+echo "delete from address where ipaddr like '172.16.%'" | $MYSQLQ
+echo "delete from address where ipaddr like '172.17.%'" | $MYSQLQ
+echo "delete from address where ipaddr like '172.18.%'" | $MYSQLQ
+echo "delete from address where ipaddr like '172.19.%'" | $MYSQLQ
+echo "delete from address where ipaddr like '172.2.%'" | $MYSQLQ
+echo "delete from address where ipaddr like '172.30.%'" | $MYSQLQ
+echo "delete from address where ipaddr like '172.31.%'" | $MYSQLQ
+
+txtlog randadd "Added $tlcount addresses"
+txtlog randadd Stop
 
 funstop $processname

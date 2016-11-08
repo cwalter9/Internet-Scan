@@ -5,6 +5,7 @@ stime=`date +%s`
 cd /admin/iscan
 . functions
 
+txtlog dowork Start
 funproccheck
 fundbcheck
 
@@ -18,8 +19,15 @@ fi
 
 export shid
 
-for i in `echo "select vname from vars where vfield=1" | $MYSQLR | gawk -F- '{ print $2 }'`; do
+for i in `echo "select procname from proctab where shid='$shid' and penable=1 and procname!='dowork'" | $MYSQLR`; do
+  echo "Executing $i"
+  sleep 1
   bash $i &
 done
+
+loadavg=`cat /proc/loadavg | gawk -F. '{ print $1 }'`
+dblog loadavg "$loadavg"
+
+txtlog dowork Stop
 
 funstop $processname

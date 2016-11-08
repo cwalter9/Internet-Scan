@@ -5,10 +5,12 @@ cd /admin/iscan
 . functions
 
 addrdir=`cat config | grep FileAddrDir | gawk -F= '{ print $2 }'`
+chkmkdir $addrdir
 
-for i in `echo "select ipaddr from address where status=1 limit $runlimit" | $MYSQLQ`; do
-  nmap --host-timeout 15 -sn "$i" -oG address/$i
-  echo "update address set status=2 where ipaddr='$i'" | $MYSQLQ
+for i in `echo "select ipaddr from address where status=1 and shid=$shid limit $runlimit" | $MYSQLR`; do
+  nmap --host-timeout 30 -oX address/$i "$i"
+  echo "update address set status=2,shid=$shid where ipaddr='$i'" | $MYSQLQ
+  funuptimeaddr $i
 done
 
 funstop $processname

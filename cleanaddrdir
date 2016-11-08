@@ -11,18 +11,18 @@ ctime=`echo "$ctime - $cage" | bc`
 rmcount=0
 
 for i in `echo "select ipaddr from ports where chtime<'$ctime' limit $runlimit" | $MYSQLR | sort | uniq`; do
-  rm -rf address/$i &
+  rm -rf address/$i
   rmcount=`echo "$rmcount + 1" | bc`
 done
 
 for i in `echo "select ipaddr from address where status=3 and updown=0 and fcstat=1 limit $runlimit" | $MYSQLR`; do
-  rm -rf address/$i &
+  rm -rf address/$i
   echo "update address set fcstat=0 where ipaddr='$i'" | $MYSQLQ
   rmcount=`echo "$rmcount + 1" | bc`
 done
 
 for i in `echo "select ipaddr from address where status=4 and fcstat=1 limit $runlimit" | $MYSQLR`; do
-  rm -rf address/$i &
+  rm -rf address/$i
   echo "update address set fcstat=0 where ipaddr='$i'" | $MYSQLQ
   rmcount=`echo "$rmcount + 1" | bc`
 done

@@ -1,0 +1,21 @@
+#!/bin/bash
+
+cd /admin/iscan
+. functions
+
+scannerhost=`cat config | grep ScannerHost | gawk -F= '{ print $2 }'`
+shid=`echo "select shid from scanners where scanhost='$scannerhost'" | $MYSQLR`
+
+function funshuffsh {
+  for i in `echo "select ipaddr from $1 where shid=0 limit $runlimit" | $MYSQLR`; do
+    assid=`shuf -n1 -i1-3`
+    echo "update $1 set shid='$assid' where ipaddr='$i'" | $MYSQLQ
+    funuptimeaddr $i
+  done
+}
+
+funshuffsh address
+# funshuffsh ports
+# funshuffsh service
+
+funstop $processname
