@@ -7,10 +7,10 @@ cd /admin/iscan
 chkmkdir /tmp/xml
 
 for i in `echo "select ipaddr from address where status=3 and updown=1 and shid='$shid' limit $runlimit" | $MYSQLR`; do
-  if [ ! -f /tmp/xml/$i ]; then
-    nmap --host-timeout 30 -oX /tmp/xml/$i $i
+  if [ ! -f address/$i ]; then
+    nmap --host-timeout 30 -oX address/$i $i
   fi
-  for f in `cat /tmp/xml/$i | grep "port protocol" | gawk -F\" '{ print $4 }'`; do
+  for f in `cat address/$i | grep "port protocol" | gawk -F\" '{ print $4 }'`; do
     chtime=`date +%s`
     echo "insert into ports set ipaddr='$i',port='$f',chtime='$chtime',shid='$shid'" | $MYSQLQ
   done

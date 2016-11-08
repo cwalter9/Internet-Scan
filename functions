@@ -1,5 +1,6 @@
 MYSQLQ="mysql -hrdbhost -uscanuser -pscanpass -Dinternetscan -s"
 MYSQLR="mysql -hrdbhost -uscanuser -pscanpass -Dinternetscan -s"
+# MYSQLR="mysql -Dinternetscan -s"
 cdate=`date +%F`
 
 scannerhost=`cat config | grep ScannerHost | gawk -F= '{ print $2 }'`

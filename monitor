@@ -3,8 +3,8 @@
 cd /admin/iscan
 
 MYSQLQ="mysql -hrdbhost -uscanuser -pscanpass -Dinternetscan -s"
-MYSQLR="mysql -hrdbhost -uscanuser -pscanpass -Dinternetscan -s"
-#MYSQLR="mysql -Dinternetscan -s"
+#MYSQLR="mysql -hrdbhost -uscanuser -pscanpass -Dinternetscan -s"
+MYSQLR="mysql -Dinternetscan -s"
 
 echo "Global address count: `echo "select count(*) from address" | $MYSQLR`"
 echo "Waiting to be assigned: `echo "select count(*) from address where status=1 and shid=0" | $MYSQLR`"
